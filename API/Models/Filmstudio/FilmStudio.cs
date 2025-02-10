@@ -1,8 +1,8 @@
 using System;
 
-namespace API.Models.FilmStudio;
+namespace API.Models;
 
-public class FilmStudio
+public class Filmstudio
 {
     public int FilmStudioId { get; set; }
     public required string Name { get; set; }
