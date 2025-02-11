@@ -18,4 +18,9 @@ public class FilmService
         return film;
     }
 
+    public async Task<Film> GetByIdAsync(int id)
+    {
+        return await _filmRepository.GetByIdAsync(id);
+    }
+
 }
