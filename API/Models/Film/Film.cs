@@ -3,7 +3,7 @@ using System;
 namespace API.Models;
 
 
-public class Film
+public class Film : IFilm
 { 
     public int FilmId { get; set; }
     public required string Title { get; set; }
