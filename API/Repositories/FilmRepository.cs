@@ -1,9 +1,10 @@
 using System;
 using API.Models;
+using API.Repositories.Interfaces;
 
 namespace API.Repositories;
 
-public class FilmRepository
+public class FilmRepository : IFilmRepository
 {
     private readonly AppDbcontext _context;
 
