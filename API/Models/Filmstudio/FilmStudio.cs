@@ -2,7 +2,7 @@ using System;
 
 namespace API.Models;
 
-public class Filmstudio
+public class Filmstudio : IFilmstudio
 {
     public int FilmStudioId { get; set; }
     public required string Name { get; set; }
