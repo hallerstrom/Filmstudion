@@ -1,49 +1,113 @@
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using API.Models;
+using System.IdentityModel.Tokens.Jwt;
+using Microsoft.IdentityModel.Tokens;
+using System.Security.Claims;
+using System.Text;
+using API.DTO;
+using Microsoft.AspNetCore.Identity;
 
 namespace API.Controllers
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class UserController : ControllerBase
-    {
-            private readonly AppDbcontext _context;
+ [ApiController]
+[Route("api/users")]
+public class UsersController : ControllerBase
+{
+    private readonly UserManager<User> _userManager;
+    private readonly SignInManager<User> _signInManager;
+    private readonly AppDbcontext _context;
 
-    public UserController(AppDbcontext context)
+    public UsersController(UserManager<User> userManager, SignInManager<User> signInManager, AppDbcontext context)
     {
+        _userManager = userManager;
+        _signInManager = signInManager;
         _context = context;
     }
 
-    // POST api/user/register
+    // Registrera en admin
     [HttpPost("register")]
-    public IActionResult RegisterUser([FromBody] User user)
+    public async Task<IActionResult> Register(RegisterDTO model)
     {
-        if (user == null) return BadRequest("Invalid user data");
+        var user = new User
+        {
+            UserName = model.UserName,
+            Role = model.IsAdmin ? "admin" : "filmstudio"
+        };
 
-        _context.Users.Add(user);
-        _context.SaveChanges();
+        var result = await _userManager.CreateAsync(user, model.Password);
 
-        return Ok(new { user.UserName, user.Role, user.UserId });
+        if (!result.Succeeded)
+            return BadRequest(result.Errors);
+
+        await _userManager.AddToRoleAsync(user, user.Role);
+
+        var response = new UserResponseDTO
+        {
+            UserName = user.UserName,
+            Role = user.Role,
+            UserId = user.Id
+        };
+
+        return Ok(response);
     }
 
-    // POST api/user/authenticate
+    // Autentisera en användare (admin eller filmstudio)
     [HttpPost("authenticate")]
-    public IActionResult Authenticate([FromBody] IUserAuthenticate request)
+    public async Task<IActionResult> Authenticate(UserAuthenticateDTO model)
     {
-        var user = _context.Users.FirstOrDefault(u => u.UserName == request.UserName && u.Password == request.Password);
-        if (user == null) return Unauthorized();
+        var user = await _userManager.FindByNameAsync(model.UserName);
 
-        // Genererar JWT-token
+        if (user == null || !await _userManager.CheckPasswordAsync(user, model.Password))
+            return Unauthorized();
 
-        return Ok(new 
-        { 
-            user.UserName, 
-            user.Role, 
-            user.UserId 
-        });
+        var token = GenerateJwtToken(user);
+
+        var response = new UserResponseDTO
+        {
+            UserName = user.UserName,
+            Role = user.Role,
+            UserId = user.Id
+        };
+
+        if (user.Role == "filmstudio")
+        {
+            var filmStudio = await _context.Filmstudios.FindAsync(user.FilmStudioId);
+            if (filmStudio != null)
+            {
+                response.FilmStudio = new FilmStudioDTO
+                {
+                    FilmStudioId = filmStudio.FilmStudioId,
+                    Name = filmStudio.Name,
+                    City = filmStudio.City
+                };
+            }
+        }
+
+        return Ok(new { Token = token, User = response });
     }
 
-    }
+    private string GenerateJwtToken(User user)
+{
+    var key = Encoding.UTF8.GetBytes("supersecureandlongenoughkeythatis32bytes"); 
+    
+    var claims = new List<Claim>
+    {
+        new Claim(ClaimTypes.Name, user.UserName),
+        new Claim("UserId", user.Id.ToString()),
+        new Claim(ClaimTypes.Role, user.Role)
+    };
+
+    var tokenDescriptor = new SecurityTokenDescriptor
+    {
+        Subject = new ClaimsIdentity(claims),
+        Expires = DateTime.UtcNow.AddHours(2),
+        SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+    };
+
+    var tokenHandler = new JwtSecurityTokenHandler();
+    var token = tokenHandler.CreateToken(tokenDescriptor);
+    return tokenHandler.WriteToken(token);
+}
+}
+
 }

@@ -18,6 +18,7 @@ public class AppDbcontext : IdentityDbContext<User>
     public DbSet<Film> Films { get; set; } 
     public DbSet<FilmCopy> FilmCopies { get; set; } 
     public DbSet<Filmstudio> Filmstudios { get; set; }
+   
 
     //Konfig av relationer i databasen
     // protected override void OnModelCreating(ModelBuilder builder)
