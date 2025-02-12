@@ -15,6 +15,17 @@ builder.Services.AddIdentity<User, IdentityRole>()
     .AddEntityFrameworkStores<AppDbcontext>()
     .AddDefaultTokenProviders();
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("MyCorsPolicy", builder =>
+    {
+        builder.WithOrigins("*")
+               .AllowAnyMethod() 
+               .AllowAnyHeader();
+
+    });
+});
+
 var key = Encoding.UTF8.GetBytes("supersecureandlongenoughkeythatis32bytes"); 
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -61,7 +72,8 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-app.UseHttpsRedirection();
+app.UseRouting();
+app.UseCors("MyCorsPolicy"); 
 app.UseAuthentication();
 app.UseAuthorization();
 

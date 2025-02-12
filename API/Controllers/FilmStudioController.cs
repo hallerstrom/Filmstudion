@@ -76,5 +76,13 @@ namespace API.Controllers
 
         return Ok(studios);
     }
+    
+    // api/filmstudio/test
+    [HttpGet("test")]
+    public IActionResult Test()
+    {
+        return Ok("Testar!");
     }
 }
+}
+
