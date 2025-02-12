@@ -4,8 +4,8 @@ namespace API.Models;
 
 public interface IUserRegister
 {
-    string Username { get; set; }
+    string UserName { get; set; }
     string Password { get; set; }
-    bool IsAdmin { get; set; }
+    string Role { get; set; }
 
 }

@@ -6,8 +6,7 @@ public interface IFilm
 {
     int FilmId { get; set; }
     string Title { get; set; }
-    int ReleaseYear { get; set; }
-    int FilmStudioId { get; set; }
-    ICollection<FilmCopy> FilmCopies { get; set; }
+    int AvailebleCopies { get; set; }
+    List<FilmCopy> FilmCopies { get; set; }
 
 }
