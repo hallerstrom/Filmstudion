@@ -20,33 +20,33 @@ public class AppDbcontext : IdentityDbContext<User>
     public DbSet<Filmstudio> Filmstudios { get; set; }
 
     //Konfig av relationer i databasen
-    protected override void OnModelCreating(ModelBuilder builder)
-    {
-        base.OnModelCreating(builder);
+    // protected override void OnModelCreating(ModelBuilder builder)
+    // {
+    //     base.OnModelCreating(builder);
 
-        // Film / Filmstudio
-        builder.Entity<Film>()
-            .HasOne(f => f.Filmstudio)
-            .WithMany(fs => fs.Films)
-            .HasForeignKey(f => f.FilmStudioId);
+    //     // Film / Filmstudio
+    //     builder.Entity<Film>()
+    //         .HasOne(f => f.FilmStudio)
+    //         .WithMany(fs => fs.Films)
+    //         .HasForeignKey(f => f.FilmStudioId);
 
-        // FilmCopy / Film
-        builder.Entity<FilmCopy>()
-            .HasOne(fc => fc.Film)
-            .WithMany(f => f.FilmCopies)
-            .HasForeignKey(fc => fc.FilmId);
+    //     // FilmCopy / Film
+    //     builder.Entity<FilmCopy>()
+    //         .HasOne(fc => fc.Film)
+    //         .WithMany(f => f.FilmCopies)
+    //         .HasForeignKey(fc => fc.FilmId);
 
-        // FilmCopy / Filmstudio
-        builder.Entity<FilmCopy>()
-            .HasOne(fc => fc.RentedByFilmStudio)
-            .WithMany(fs => fs.RentedFilmCopies)
-            .HasForeignKey(fc => fc.RentedByFilmStudioId);
-    // User / Filmstudio
-        builder.Entity<User>()
-            .HasOne(u => u.Filmstudio)
-            .WithMany(fs => fs.Users)
-            .HasForeignKey(u => u.Id);
-    }
+    //     // FilmCopy / Filmstudio
+    //     builder.Entity<FilmCopy>()
+    //         .HasOne(fc => fc.RentedByFilmStudio)
+    //         .WithMany(fs => fs.RentedFilmCopies)
+    //         .HasForeignKey(fc => fc.RentedByFilmStudioId);
+    // // User / Filmstudio
+    //     builder.Entity<User>()
+    //         .HasOne(u => u.Filmstudio)
+    //         .WithMany(fs => fs.Users)
+    //         .HasForeignKey(u => u.Id);
+    // }
 
 
 

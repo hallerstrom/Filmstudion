@@ -1,8 +1,5 @@
 using API;
 using API.Models;
-using API.Repositories;
-using API.Repositories.Interfaces;
-using API.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -32,8 +29,6 @@ builder.Services.AddAuthentication()
         };
     });
 
-    builder.Services.AddScoped<IFilmRepository, FilmRepository>();
-    builder.Services.AddScoped<AuthService>();
 
 // Add services to the container.
 
