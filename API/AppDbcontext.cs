@@ -18,37 +18,30 @@ public class AppDbcontext : IdentityDbContext<User>
     public DbSet<Film> Films { get; set; } 
     public DbSet<FilmCopy> FilmCopies { get; set; } 
     public DbSet<Filmstudio> Filmstudios { get; set; }
+    public DbSet<FilmCopy> RentedFilmCopies { get; set; }
+    public DbSet<Rental> Rentals { get; set; }
    
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        base.OnModelCreating(modelBuilder);
 
-    //Konfig av relationer i databasen
-    // protected override void OnModelCreating(ModelBuilder builder)
-    // {
-    //     base.OnModelCreating(builder);
+        modelBuilder.Entity<Film>().HasData(
+            new Film { FilmId = 1, Title = "The Shawshank Redemption", AvailableCopies = 5},
+            new Film { FilmId = 2, Title = "The Godfather", AvailableCopies = 3 }
+        );
 
-    //     // Film / Filmstudio
-    //     builder.Entity<Film>()
-    //         .HasOne(f => f.FilmStudio)
-    //         .WithMany(fs => fs.Films)
-    //         .HasForeignKey(f => f.FilmStudioId);
+    modelBuilder.Entity<Film>()
+        .HasMany(f => f.FilmCopies)
+        .WithOne()
+        .HasForeignKey(c => c.FilmId);
 
-    //     // FilmCopy / Film
-    //     builder.Entity<FilmCopy>()
-    //         .HasOne(fc => fc.Film)
-    //         .WithMany(f => f.FilmCopies)
-    //         .HasForeignKey(fc => fc.FilmId);
-
-    //     // FilmCopy / Filmstudio
-    //     builder.Entity<FilmCopy>()
-    //         .HasOne(fc => fc.RentedByFilmStudio)
-    //         .WithMany(fs => fs.RentedFilmCopies)
-    //         .HasForeignKey(fc => fc.RentedByFilmStudioId);
-    // // User / Filmstudio
-    //     builder.Entity<User>()
-    //         .HasOne(u => u.Filmstudio)
-    //         .WithMany(fs => fs.Users)
-    //         .HasForeignKey(u => u.Id);
-    // }
-
+    // Seed data för FilmCopy (separat)
+    modelBuilder.Entity<FilmCopy>().HasData(
+        new FilmCopy { FilmCopyId = 1, FilmId = 1, IsRented = false }, 
+        new FilmCopy { FilmCopyId = 2, FilmId = 1, IsRented = false }, 
+        new FilmCopy { FilmCopyId = 3, FilmId = 2, IsRented = false }
+    );  
+    }
 
 
 
