@@ -1,156 +1,169 @@
-let API_URL = 'http://127.0.0.1:5199/api'; 
-let currentUser = null;
+const apiBaseUrl = "http://localhost:5199/api";
+let token = localStorage.getItem("jwt"); // Hämta token från localStorage vid sidladdning
 
-// Autentisering
+document.getElementById("loginBtn").addEventListener("click", login);
+document.getElementById("logoutBtn").addEventListener("click", logout);
+
+
+async function fetchWithAuth(url, options = {}) {
+  const headers = { "Content-Type": "application/json" };
+  const token = localStorage.getItem("jwt"); // Hämta token vid varje anrop
+
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  console.log("Fetching:", url);
+  console.log("Headers:", headers);
+
+  // console.log("Response Status:", response.status);
+  return fetch(url, { ...options, headers });
+}
+
+// Funktion för att logga in
 async function login() {
-    const username = document.getElementById('username').value;
-    const password = document.getElementById('password').value;
+  const username = document.getElementById("username").value;
+  const password = document.getElementById("password").value;
 
-    const response = await fetch(`${API_URL}/users/authenticate`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
-    });
+  const response = await fetch(`${apiBaseUrl}/users/authenticate`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username, password })
+  });
 
-    if (response.ok) {
-        const user = await response.json();
-        localStorage.setItem('token', user.token);
-        currentUser = user;
-        loadMainContent();
-    } else {
-        alert('Fel användarnamn/lösenord');
-    }
-}
+  if (response.ok) {
+    const data = await response.json();
+    token = data.token; // Kontrollera att API:et returnerar rätt fält (bör vara 'token')
 
-function logout() {
-    localStorage.removeItem('token');
-    location.reload();
-}
+    localStorage.setItem("jwt", token); // Spara token i localStorage
 
+    alert("Inloggad som " + data.userName);
+    document.getElementById("loginBtn").style.display = "none";
+    document.getElementById("logoutBtn").style.display = "inline";
 
-// Registrering
-async function registerStudio() {
-    const studioData = {
-        name: document.getElementById('regName').value,
-        city: document.getElementById('regCity').value,
-        username: document.getElementById('regUsername').value,
-        password: document.getElementById('regPassword').value
-    };
-
-    const response = await fetch(`${API_URL}/filmstudio/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(studioData)
-    });
-
-    if (response.ok) {
-        alert('Studio registrerad! Logga in nu.');
-        showLogin();
-    } else {
-        alert('Registrering misslyckades');
-    }
-}
-
-
-// Filmhantering
-async function loadFilms() {
-    const response = await fetch(`${API_URL}/film`);
-    const films = await response.json();
-
-    const filmsList = document.getElementById('filmsList');
-    filmsList.innerHTML = films.map(film => {
-        console.log("currentUser role:", currentUser?.role);
-        return `
-            <div class="filmCard">
-                <h5>${film.title}</h5>
-                <p>Lediga kopior: ${film.filmCopies?.length || 0}</p>
-                    
-                    <button onclick="rentFilm(${film.filmId})">Låna</button>
-            </div>
-        `;
-    }).join('');
-}
-
-async function loadRentals() {
-    const response = await fetch(`${API_URL}/mystudio/rentals`, {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-    });
-    
-    const rentals = await response.json();
-    const rentalsList = document.getElementById('rentalsList');
-    rentalsList.innerHTML = rentals.map(film => `
-        <div class="filmCard">
-            <h5>${film.title}</h5>
-            <button onclick="returnFilm(${film.filmId})">Lämna tillbaka</button>
-        </div>
-    `).join('');
-}
-
-async function rentFilm(filmId) {
-    try {
-        const response = await fetch(`${API_URL}/film/rent?id=${filmId}`, { // Skicka ENDAST filmId
-            method: 'POST',
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } // Viktigt: Inkludera token
-        });
-
-        if (response.ok) {
-            alert("Filmen har lånats!"); // Enkelt meddelande
-        } else {
-            const errorText = await response.text();
-            alert(`Rent film failed: ${response.status} - ${errorText}`); // Visa felmeddelande
-        }
-    } catch (error) {
-        console.error("Rent Film Error:", error);
-        alert("Ett fel uppstod."); // Generellt felmeddelande
-    }
-}
-async function returnFilm(filmId) {
-    const response = await fetch(`${API_URL}/films/return?id=${filmId}&studioid=${currentUser.filmStudioId}`, {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-    });
-
-    if (response.ok) {
-        loadFilms();
-        loadRentals();
-    } else {
-        alert('Kunde inte lämna tillbaka filmen');
-    }
-}
-
-// --------------------------
-// Hjälpfunktioner
-// --------------------------
-function showRegister() {
-    document.getElementById('loginForm').style.display = 'none';
-    document.getElementById('registerForm').style.display = 'block';
-}
-
-function showLogin() {
-    document.getElementById('registerForm').style.display = 'none';
-    document.getElementById('loginForm').style.display = 'block';
-}
-
-function loadMainContent() {
-    document.getElementById('authSection').style.display = 'none';
-    document.getElementById('mainContent').style.display = 'block';
-    document.getElementById('studioName').textContent = currentUser.filmStudio?.name;
     loadFilms();
-    loadRentals();
+    // loadRentals();
+  } else {
+    alert("Fel användarnamn eller lösenord");
+  }
 }
 
-// Initiera
-window.onload = () => {
-    const token = localStorage.getItem('token');
-    if (token) {
-        // Hämta användardata från token (behöver implementeras i API:et)
-        fetch(`${API_URL}/users/me`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        })
-        .then(response => response.json())
-        .then(user => {
-            currentUser = user;
-            loadMainContent();
-        });
-    }
-};
+// Funktion för att logga ut
+function logout() {
+  token = null;
+  localStorage.removeItem("jwt"); // Ta bort token från localStorage
+
+  document.getElementById("loginBtn").style.display = "inline";
+  document.getElementById("logoutBtn").style.display = "none";
+  document.getElementById("rentals-section").style.display = "none";
+
+  alert("Utloggad");
+}
+
+// Funktion för att hämta och visa filmer
+async function loadFilms() {
+  const response = await fetchWithAuth(`${apiBaseUrl}/films`);
+
+  if (response.ok) {
+    const films = await response.json();
+    const filmsList = document.getElementById("filmsList");
+    filmsList.innerHTML = "";
+
+    films.forEach(film => {
+      const li = document.createElement("li");
+      li.textContent = `${film.title || film.Title} - ${film.description || film.Description}`;
+
+      if (token) { // Visa låneknapp endast om användaren är inloggad
+        const rentBtn = document.createElement("button");
+        rentBtn.textContent = "Låna";
+        rentBtn.onclick = () => rentFilm(film.filmId || film.FilmId);
+        li.appendChild(rentBtn);
+      }
+
+      filmsList.appendChild(li);
+    });
+  } else {
+    console.error("Fel vid hämtning av filmer:", response.status);
+  }
+}
+
+// Funktion för att hyra film
+async function rentFilm(filmId) {
+  const studioid = 1; 
+
+  const response = await fetchWithAuth(`${apiBaseUrl}/films/rent?id=${filmId}&studioid=${studioid}`, {
+    method: "POST"
+  });
+
+  if (response.ok) {
+    alert("Film uthyrd!");
+    loadRentals();
+  } else {
+    alert("Fel vid uthyrning");
+  }
+}
+
+// // Funktion för att ladda uthyrningar
+// async function loadRentals() {
+//   const response = await fetchWithAuth(`${apiBaseUrl}/mystudio/rentals`);
+
+//   if (response.ok) {
+//     console.log("Rentals fetched successfully!");
+//   } else {
+//     console.error("Fel vid hämtning av uthyrningar:", response.status);
+//     alert("Du är inte inloggad eller har inga uthyrningar.");
+//   }
+
+
+//   if (response.ok) {
+//     const rentals = await response.json();
+//     const rentalsList = document.getElementById("rentalsList");
+//     rentalsList.innerHTML = "";
+
+//     rentals.forEach(rental => {
+//       const li = document.createElement("li");
+//       li.textContent = `FilmCopy ID: ${rental.filmCopyId || rental.FilmCopyId}`;
+
+//       const returnBtn = document.createElement("button");
+//       returnBtn.textContent = "Lämna tillbaka";
+//       returnBtn.onclick = () => returnFilm(rental.filmId || rental.FilmId);
+//       li.appendChild(returnBtn);
+
+//       rentalsList.appendChild(li);
+//     });
+
+//     document.getElementById("rentals-section").style.display = "block";
+//   } else {
+//     console.error("Fel vid hämtning av uthyrningar:", response.status);
+//     alert("Du är inte inloggad eller har inga uthyrningar.");
+//   }
+// }
+
+// Funktion för att returnera film
+async function returnFilm(filmId) {
+  const studioid = 1;
+
+  const response = await fetchWithAuth(`${apiBaseUrl}/films/return?id=${filmId}&studioid=${studioid}`, {
+    method: "POST"
+  });
+
+  if (response.ok) {
+    alert("Film returnerad!");
+    loadRentals();
+  } else {
+    alert("Fel vid retur");
+  }
+}
+
+// Starta scriptet genom att ladda filmer och uthyrningar om användaren är inloggad
+if (token) {
+  document.getElementById("loginBtn").style.display = "none";
+  document.getElementById("logoutBtn").style.display = "inline";
+  loadFilms();
+  // loadRentals();
+} else {
+  document.getElementById("logoutBtn").style.display = "none";
+}
+
+// Ladda filmer oavsett inloggningsstatus
+loadFilms();

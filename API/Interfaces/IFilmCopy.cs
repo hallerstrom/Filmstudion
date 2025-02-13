@@ -1,11 +1,10 @@
 using System;
 
-namespace API.Models;
+namespace API.Interfaces;
 
 public interface IFilmCopy
 {
     int FilmCopyId { get; set; }
     int FilmId { get; set; }
-    bool IsRented  { get; set; }
-
+    bool IsRented { get; set; }
 }
