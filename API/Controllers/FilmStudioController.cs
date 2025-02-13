@@ -28,7 +28,6 @@ namespace API.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> RegisterFilmStudio([FromBody] RegisterFilmStudioDto model)
         {
-            // Skapa användaren (filmstudio)
             var user = new IdentityUser { UserName = model.Username };
             var result = await _userManager.CreateAsync(user, model.Password);
 
@@ -79,8 +78,6 @@ namespace API.Controllers
                 return NotFound();
             }
 
-            // Om användaren är admin eller den egna filmstudion returneras fullständig data,
-            // annars returneras endast id och namn.
             var userRole = User.FindFirst("role")?.Value;
             var userFilmStudioId = User.FindFirst("filmStudioId")?.Value;
 
