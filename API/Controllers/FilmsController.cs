@@ -20,7 +20,7 @@ namespace API.Controllers;
             _context = context;
         }
 
-        // 6. POST /api/films – Lägg till ny film (endast admin)
+        // 6. POST /api/films – Lägg till ny film - admin
         [HttpPost]
         [Authorize(Roles = "admin")]
         public async Task<IActionResult> CreateFilm([FromBody] CreateFilmDto model)
@@ -31,7 +31,6 @@ namespace API.Controllers;
                 Description = model.Description,
             };
 
-            // Skapa angivet antal exemplar
             for (int i = 0; i < model.NumberOfCopies; i++)
             {
                 film.FilmCopies.Add(new FilmCopy { IsRented = false });
@@ -60,7 +59,7 @@ namespace API.Controllers;
             }
         }
 
-        // 10. GET /api/films/{id} – Hämta en enskild film
+        // 10. GET /api/films/{id} – Hämta en en film
         [HttpGet("{id}")]
         public async Task<IActionResult> GetFilm(int id)
         {
@@ -98,9 +97,13 @@ namespace API.Controllers;
         [HttpPost("rent")]
         [Authorize(Roles = "filmstudio")]
         public async Task<IActionResult> RentFilm([FromQuery] int id, [FromQuery] int studioid)
-        {
-            var role = User.FindFirst("role")?.Value;
+        {   
+            var role = User.FindFirst("filmstudio")?.Value;
             var userStudioId = User.FindFirst("filmStudioId")?.Value;
+
+            // Console.WriteLine($"Role from token: {role}");
+            // Console.WriteLine($"StudioId from token: {userStudioId}");
+            // Console.WriteLine($"Received StudioId: {studioid}");
 
             if (role?.ToLower() != "filmstudio" || userStudioId != studioid.ToString())
             {

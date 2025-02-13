@@ -57,10 +57,11 @@ namespace API.Controllers
                                     .FirstOrDefault(c => c.Type == "role")?.Value ?? "filmstudio";
 
                 var filmStudioIdClaim = "";
-                IFilmStudio filmStudio = null;  // Objekt som kommer hålla filmstudio information
+                IFilmStudio filmStudio = null;  // Fixa.
 
                 if (roleClaim.ToLower() == "filmstudio")
                 {
+                    //Fixa
                     filmStudioIdClaim = "1"; 
                     filmStudio = new FilmStudio
                     {
@@ -79,7 +80,7 @@ namespace API.Controllers
                     Audience = "http://localhost:5199", 
                     Subject = new ClaimsIdentity(new Claim[] {
                         new Claim(ClaimTypes.Name, user.UserName),
-                        new Claim("role", roleClaim),  // Här sätts rätt roll
+                        new Claim("role", roleClaim),
                         new Claim("userId", user.Id),
                         new Claim("filmStudioId", filmStudioIdClaim)
                     }),
@@ -90,7 +91,6 @@ namespace API.Controllers
                 var token = tokenHandler.CreateToken(tokenDescriptor);
                 var tokenString = tokenHandler.WriteToken(token);
 
-                // Om filmstudio så skicka tillbaka filmstudio informationen också
                 if (roleClaim.ToLower() == "filmstudio")
                 {
                     return Ok(new 

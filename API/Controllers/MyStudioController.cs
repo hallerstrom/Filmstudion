@@ -17,7 +17,8 @@ namespace API.Controllers
             _context = context;
         }
 
-        // 15. GET /api/mystudio/rentals – Hämta aktuella uthyrningar för inloggad filmstudio
+        // Fel med auth.
+        // 15. GET /api/mystudio/rentals 
         [HttpGet("rentals")]
         [Authorize]
         public async Task<IActionResult> GetRentals()
