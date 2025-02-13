@@ -1,82 +1,65 @@
-using API;
-using API.Models;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+using API.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
+
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddDbContext<AppDbcontext>(opt =>
-opt.UseInMemoryDatabase("AppDb"));
-
-builder.Services.AddIdentity<User, IdentityRole>()
-    .AddEntityFrameworkStores<AppDbcontext>()
-    .AddDefaultTokenProviders();
-
+// Registrera CORS
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("MyCorsPolicy", builder =>
+    options.AddPolicy("AllowAll", policyBuilder =>
     {
-        builder.WithOrigins("*")
-               .AllowAnyMethod() 
-               .AllowAnyHeader();
-
+        policyBuilder.AllowAnyOrigin()
+                     .AllowAnyMethod()
+                     .AllowAnyHeader();
     });
 });
 
-var key = Encoding.UTF8.GetBytes("supersecureandlongenoughkeythatis32bytes"); 
-
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
-    {
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-            ValidIssuer = "yourissuer",  
-            ValidAudience = "youraudience",  
-            IssuerSigningKey = new SymmetricSecurityKey(key)  
-        };
-    });
-
-
-// Add services to the container.
-
 builder.Services.AddControllers();
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+
+// Konfigurera EF med InMemory‑databas
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseInMemoryDatabase("AppDb"));
+
+// Konfigurera Identity
+builder.Services.AddIdentity<IdentityUser, IdentityRole>()
+    .AddEntityFrameworkStores<AppDbContext>()
+    .AddDefaultTokenProviders();
+
+// Konfigurera JWT‑autentisering
+var key = Encoding.ASCII.GetBytes("SuperDuperUltraMegaSecureJWTSecretKeyThatIsLongEnough!");
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = "JwtBearer";
+    options.DefaultChallengeScheme = "JwtBearer";
+})
+.AddJwtBearer("JwtBearer", options =>
+{
+    options.RequireHttpsMetadata = false;
+    options.SaveToken = true;
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+    ValidateIssuer = true,
+    ValidateAudience = true,
+    ValidIssuer = "http://localhost:5199", 
+    ValidAudience = "http://localhost:5199", 
+    ValidateIssuerSigningKey = true,
+    IssuerSigningKey = new SymmetricSecurityKey(key)
+    };
+});
+
+builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
-using (var scope = app.Services.CreateScope())
-{
-    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-
-    string[] roleNames = { "admin", "filmstudio" };
-    foreach (var roleName in roleNames)
-    {
-        if (!await roleManager.RoleExistsAsync(roleName))
-        {
-            await roleManager.CreateAsync(new IdentityRole(roleName));
-        }
-    }
-}
-
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-}
+app.UseCors("AllowAll");
 
 app.UseRouting();
-app.UseCors("MyCorsPolicy"); 
 app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
 
 app.Run();

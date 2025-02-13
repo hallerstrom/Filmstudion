@@ -1,9 +1,9 @@
 using System;
 
-namespace API.Models;
+namespace API.Interfaces;
 
 public interface IUserAuthenticate
 {
-    string UserName { get; set; }
+    string Username { get; set; }
     string Password { get; set; }
 }

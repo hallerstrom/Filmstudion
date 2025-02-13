@@ -1,49 +1,27 @@
 <!DOCTYPE html>
 <html lang="sv">
 <head>
-    <meta charset="UTF-8">
-    <title>FilmStudio Portal</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="script.js" defer></script>
+  <meta charset="UTF-8">
+  <title>Filmstudio Client</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- Login/Register Section -->
-    <div id="authSection">
-        <h2>FilmStudio Portal</h2>
-        <div id="loginForm">
-            <input type="text" id="username" placeholder="Användarnamn">
-            <input type="password" id="password" placeholder="Lösenord">
-            <button onclick="login()">Logga in</button>
-            <button onclick="showRegister()">Registrera Studio</button>
-        </div>
-        <div id="registerForm" style="display: none;">
-            <input type="text" id="regName" placeholder="Studio Namn">
-            <input type="text" id="regCity" placeholder="Stad">
-            <input type="text" id="regUsername" placeholder="Användarnamn">
-            <input type="password" id="regPassword" placeholder="Lösenord">
-            <button onclick="registerStudio()">Registrera</button>
-            <button onclick="showLogin()">Tillbaka</button>
-        </div>
-    </div>
-
-    <!-- Main Content (synligt efter autentisering) -->
-    <div id="mainContent" style="display: none;">
-        <button onclick="logout()">Logga ut</button>
-        <h3>Välkommen, <span id="studioName"></span>!</h3>
-        
-        <!-- Filmer -->
-        <div id="filmsContainer">
-            <h4>Tillgängliga Filmer:</h4>
-            <div id="filmsList"></div>
-        </div>
-
-        <!-- Hyrda filmer -->
-        <div id="rentalsContainer">
-            <h4>Mina Lån:</h4>
-            <div id="rentalsList"></div>
-        </div>
-    </div>
-
-    
+  <h1>Filmstudio Client</h1>
+  <div id="login-section">
+    <h2>Logga in</h2>
+    <input type="text" id="username" placeholder="Användarnamn">
+    <input type="password" id="password" placeholder="Lösenord">
+    <button id="loginBtn">Logga in</button>
+    <button id="logoutBtn" style="display:none;">Logga ut</button>
+  </div>
+  <div id="films-section">
+    <h2>Tillgängliga filmer</h2>
+    <ul id="filmsList"></ul>
+  </div>
+  <div id="rentals-section" style="display:none;">
+    <h2>Mina uthyrningar</h2>
+    <ul id="rentalsList"></ul>
+  </div>
+  <script src="script.js"></script>
 </body>
 </html>
