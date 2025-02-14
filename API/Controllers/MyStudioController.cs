@@ -1,4 +1,6 @@
+using System.Security.Claims;
 using API.Data;
+using API.Models.Film;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -23,7 +25,7 @@ namespace API.Controllers
         [Authorize]
         public async Task<IActionResult> GetRentals()
         {
-            var role = User.FindFirst("role")?.Value;
+            var role = User.FindFirst(ClaimTypes.Role)?.Value;
             var userStudioId = User.FindFirst("filmStudioId")?.Value;
             if (role?.ToLower() != "filmstudio")
             {

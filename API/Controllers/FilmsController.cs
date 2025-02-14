@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using API.Data;
 using API.DTO;
 using API.Interfaces;
@@ -46,17 +47,11 @@ namespace API.Controllers;
         [HttpGet]
         public async Task<IActionResult> GetFilms()
         {
-            var films = await _context.Films.Include(f => f.FilmCopies).ToListAsync();
+            var films = await _context.Films
+                .Select(f => new Film { FilmId = f.FilmId, Title = f.Title, Description = f.Description  })
+                .ToListAsync();
 
-            if (User.Identity.IsAuthenticated)
-            {
-                return Ok(films);
-            }
-            else
-            {
-                var result = films.Select(f => new { f.FilmId, f.Title, f.Description });
-                return Ok(result);
-            }
+            return Ok(films);
         }
 
         // 10. GET /api/films/{id} – Hämta en en film
@@ -98,12 +93,8 @@ namespace API.Controllers;
         [Authorize(Roles = "filmstudio")]
         public async Task<IActionResult> RentFilm([FromQuery] int id, [FromQuery] int studioid)
         {   
-            var role = User.FindFirst("filmstudio")?.Value;
+            var role = User.FindFirst(ClaimTypes.Role)?.Value;
             var userStudioId = User.FindFirst("filmStudioId")?.Value;
-
-            // Console.WriteLine($"Role from token: {role}");
-            // Console.WriteLine($"StudioId from token: {userStudioId}");
-            // Console.WriteLine($"Received StudioId: {studioid}");
 
             if (role?.ToLower() != "filmstudio" || userStudioId != studioid.ToString())
             {
@@ -132,7 +123,7 @@ namespace API.Controllers;
         [Authorize]
         public async Task<IActionResult> ReturnFilm([FromQuery] int id, [FromQuery] int studioid)
         {
-            var role = User.FindFirst("role")?.Value;
+            var role = User.FindFirst(ClaimTypes.Role)?.Value;
             var userStudioId = User.FindFirst("filmStudioId")?.Value;
 
             if (role?.ToLower() != "filmstudio" || userStudioId != studioid.ToString())

@@ -13,8 +13,8 @@ async function fetchWithAuth(url, options = {}) {
     headers["Authorization"] = `Bearer ${token}`;
   }
 
-  console.log("Fetching:", url);
-  console.log("Headers:", headers);
+  // console.log("Fetching:", url);
+  // console.log("Headers:", headers);
 
   // console.log("Response Status:", response.status);
   return fetch(url, { ...options, headers });
@@ -33,7 +33,7 @@ async function login() {
 
   if (response.ok) {
     const data = await response.json();
-    token = data.token; // Kontrollera att API:et returnerar rätt fält (bör vara 'token')
+    token = data.token; 
 
     localStorage.setItem("jwt", token); // Spara token i localStorage
 
@@ -103,41 +103,42 @@ async function rentFilm(filmId) {
   }
 }
 
-// // Funktion för att ladda uthyrningar
-// async function loadRentals() {
-//   const response = await fetchWithAuth(`${apiBaseUrl}/mystudio/rentals`);
+// Funktion för att ladda uthyrningar
+async function loadRentals() {
+  const response = await fetchWithAuth(`${apiBaseUrl}/mystudio/rentals`);
 
-//   if (response.ok) {
-//     console.log("Rentals fetched successfully!");
-//   } else {
-//     console.error("Fel vid hämtning av uthyrningar:", response.status);
-//     alert("Du är inte inloggad eller har inga uthyrningar.");
-//   }
+  if (response.ok) {
+    console.log("Rentals fetched successfully!");
+  } else {
+    console.error("Fel vid hämtning av uthyrningar:", response.status);
+    alert("Du är inte inloggad eller har inga uthyrningar.");
+  }
 
 
-//   if (response.ok) {
-//     const rentals = await response.json();
-//     const rentalsList = document.getElementById("rentalsList");
-//     rentalsList.innerHTML = "";
+  if (response.ok) {
+    const rentals = await response.json();
+    const rentalsList = document.getElementById("rentalsList");
+    rentalsList.innerHTML = "";
 
-//     rentals.forEach(rental => {
-//       const li = document.createElement("li");
-//       li.textContent = `FilmCopy ID: ${rental.filmCopyId || rental.FilmCopyId}`;
+    console.log(rentals)
 
-//       const returnBtn = document.createElement("button");
-//       returnBtn.textContent = "Lämna tillbaka";
-//       returnBtn.onclick = () => returnFilm(rental.filmId || rental.FilmId);
-//       li.appendChild(returnBtn);
+    rentals.forEach(rental => {
+      const li = document.createElement("li");
+      li.textContent = `Film: ${rental.Title || rental.Description}`;
 
-//       rentalsList.appendChild(li);
-//     });
+      const returnBtn = document.createElement("button");
+      returnBtn.textContent = "Lämna tillbaka";
+      returnBtn.onclick = () => returnFilm(rental.filmId || rental.FilmId);
+      li.appendChild(returnBtn);
 
-//     document.getElementById("rentals-section").style.display = "block";
-//   } else {
-//     console.error("Fel vid hämtning av uthyrningar:", response.status);
-//     alert("Du är inte inloggad eller har inga uthyrningar.");
-//   }
-// }
+      rentalsList.appendChild(li);
+    });
+
+    document.getElementById("rentals-section").style.display = "block";
+  } else {
+    console.error("Fel vid hämtning av uthyrningar:", response.status);
+  }
+}
 
 // Funktion för att returnera film
 async function returnFilm(filmId) {
